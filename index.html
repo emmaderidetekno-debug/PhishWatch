@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PhishWatch | Security Lab</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div><div class="eyebrow">CONTROLLED SECURITY RESEARCH</div><h1>PhishWatch</h1></div>
+    <span class="status"><i></i> Local lab</span>
+  </header>
+  <main>
+    <section class="intro">
+      <div><h2>Link activity & phishing defence</h2><p>Generate controlled test links, observe visits and inspect suspicious URLs.</p></div>
+      <div class="notice">Use only accounts and systems you own or are authorized to test. No credentials are collected.</div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-head"><div><h3>Controlled test link</h3><p>Create a unique link for your own test.</p></div><span class="pill">01 / TRACK</span></div>
+        <label for="campaignLabel">Test label</label>
+        <input id="campaignLabel" maxlength="80" value="My Gmail link test">
+        <button id="createCampaign">Generate test link</button>
+        <div id="linkResult" class="result hidden"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head"><div><h3>URL risk checker</h3><p>Analyze a URL without opening it.</p></div><span class="pill">02 / DEFEND</span></div>
+        <label for="urlInput">URL to analyze</label>
+        <input id="urlInput" placeholder="https://example.com">
+        <button id="analyzeUrl" class="secondary">Analyze URL</button>
+        <div id="analysisResult" class="result hidden"></div>
+      </article>
+    </section>
+
+    <section class="panel events">
+      <div class="panel-head"><div><h3>Recent activity</h3><p>Automated scanners may visit links before a person does.</p></div><button id="refresh" class="small secondary">Refresh</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Time</th><th>Test</th><th>Method</th><th>Classification</th><th>Browser signature</th></tr></thead><tbody id="eventsBody"><tr><td colspan="5" class="empty">No activity yet. Generate a test link first.</td></tr></tbody></table></div>
+    </section>
+    <p class="footnote">Heuristic classifications are clues, not proof of human or automated activity. PhishWatch does not log IP addresses or collect credentials.</p>
+  </main>
+  <script src="/script.js"></script>
+</body>
+</html>
