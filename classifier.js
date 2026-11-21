@@ -1,6 +1,6 @@
 const AUTOMATION_PATTERNS = [
   { pattern: /bot|crawler|spider/i, reason: "User-agent identifies itself as a bot, crawler or spider." },
-  { pattern: /scanner|safe[\\s_-]?links|urlscan|proofpoint|mimecast/i, reason: "User-agent contains a known security-scanning or link-protection marker." },
+  { pattern: /scanner|safe[\s_-]?links|urlscan|proofpoint|mimecast/i, reason: "User-agent contains a known security-scanning or link-protection marker." },
   { pattern: /preview|googleimageproxy|slackbot|facebookexternalhit|twitterbot/i, reason: "User-agent contains a link-preview or content-fetching marker." }
 ];
 
