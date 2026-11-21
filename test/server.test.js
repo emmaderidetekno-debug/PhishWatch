@@ -86,6 +86,7 @@ test("tracking endpoint records GET as unclassified and HEAD as likely automated
   for (const event of events) {
     assert.equal(Object.hasOwn(event, "ip"), false);
     assert.equal(Object.hasOwn(event, "ipAddress"), false);
+    assert.equal(Object.hasOwn(event, "userAgent"), false);
   }
 });
 
