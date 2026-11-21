@@ -52,6 +52,11 @@ test("campaign creation validates labels and returns a local test URL", async ()
   assert.equal(data.campaign.label, "API integration test");
   assert.match(data.trackingUrl, /^http:\/\/localhost:3000\/t\/[a-f0-9]{36}$/);
 
+  const listResponse = await fetch(`${baseUrl}/api/campaigns`);
+  const listData = await listResponse.json();
+  assert.equal(listData.campaigns[0].label, "API integration test");
+  assert.equal(Object.hasOwn(listData.campaigns[0], "token"), false);
+
   const invalid = await jsonRequest("/api/campaigns", { label: 123 });
   assert.equal(invalid.status, 400);
 });
