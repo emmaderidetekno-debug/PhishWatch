@@ -32,7 +32,7 @@ async function refreshEvents() {
     body.innerHTML = events.map(event => `
       <tr>
         <td>${escapeHtml(new Date(event.timestamp).toLocaleString())}</td>
-        <td>${escapeHtml(String(event.campaignId || "").slice(0, 8))}</td>
+        <td>${escapeHtml(event.campaignLabel || String(event.campaignId || "").slice(0, 8))}</td>
         <td>${escapeHtml(event.method)}</td>
         <td>${escapeHtml(event.classification)}</td>
         <td>${escapeHtml(event.confidence || "Not assessed")}</td>
