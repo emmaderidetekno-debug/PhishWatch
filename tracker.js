@@ -13,10 +13,10 @@ function readStore() {
       events: Array.isArray(parsed.events) ? parsed.events : []
     };
   } catch (error) {
-    if (error.code !== "ENOENT" && !(error instanceof SyntaxError)) {
-      throw error;
+    if (error.code === "ENOENT") {
+      return { campaigns: [], events: [] };
     }
-    return { campaigns: [], events: [] };
+    throw error;
   }
 }
 
