@@ -39,3 +39,20 @@ test("detects embedded credentials", () => {
   const result = analyzeUrl("https://user:pass@example.com/");
   assert.ok(result.indicators.some(item => /embedded username\/password/i.test(item)));
 });
+
+test("flags an IPv6 address as a URL indicator", () => {
+  const result = analyzeUrl("http://[2001:db8::1]/");
+  assert.equal(result.valid, true);
+  assert.ok(result.indicators.some(item => /IP address/i.test(item)));
+});
+
+test("detects punycode hostnames as a lookalike-domain indicator", () => {
+  const result = analyzeUrl("https://xn--pple-43d.com/");
+  assert.ok(result.indicators.some(item => /punycode/i.test(item)));
+});
+
+test("scores long URLs without treating the score as a verdict", () => {
+  const result = analyzeUrl(`https://example.com/${"a".repeat(190)}`);
+  assert.ok(result.score >= 10);
+  assert.ok(result.indicators.some(item => /unusually long/i.test(item)));
+});

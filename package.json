@@ -1,8 +1,8 @@
 {
   "name": "phishwatch",
-  "version": "0.1.1",
+  "version": "0.3.0",
   "private": true,
-  "description": "A controlled phishing-link activity lab and defensive URL analysis dashboard.",
+  "description": "A controlled security-research lab and defensive phishing detection dashboard.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,7 +10,7 @@
     "test": "node --test"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
     "express": "^4.21.2"

@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-const dataDir = path.join(__dirname, "data");
+const dataDir = process.env.PHISHWATCH_DATA_DIR || path.join(__dirname, "data");
 const file = path.join(dataDir, "activity.json");
 
 function readStore() {

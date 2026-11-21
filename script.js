@@ -15,31 +15,32 @@ function showResult(element, html) {
   element.classList.remove("hidden");
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[char]));
+}
+
 async function refreshEvents() {
   const body = $("eventsBody");
   try {
     const { events } = await request("/api/events");
     if (!events.length) {
-      body.innerHTML = '<tr><td colspan="5" class="empty">No activity yet. Generate a test link first.</td></tr>';
+      body.innerHTML = '<tr><td colspan="6" class="empty">No activity yet. Generate a test link first.</td></tr>';
       return;
     }
     body.innerHTML = events.map(event => `
       <tr>
-        <td>${new Date(event.timestamp).toLocaleString()}</td>
-        <td>${escapeHtml(event.campaignId.slice(0, 8))}</td>
+        <td>${escapeHtml(new Date(event.timestamp).toLocaleString())}</td>
+        <td>${escapeHtml(event.campaignLabel || String(event.campaignId || "").slice(0, 8))}</td>
         <td>${escapeHtml(event.method)}</td>
         <td>${escapeHtml(event.classification)}</td>
-        <td>${escapeHtml(event.userAgent)}</td>
+        <td>${escapeHtml(event.confidence || "Not assessed")}</td>
+        <td title="${escapeHtml(event.reason || "No reason stored")}" class="reason">${escapeHtml(event.reason || "Older event: no explanation stored")}</td>
       </tr>`).join("");
   } catch (error) {
-    body.innerHTML = `<tr><td colspan="5" class="empty">${escapeHtml(error.message)}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="6" class="empty">${escapeHtml(error.message)}</td></tr>`;
   }
-}
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[char]));
 }
 
 $("createCampaign").addEventListener("click", async () => {
@@ -50,7 +51,15 @@ $("createCampaign").addEventListener("click", async () => {
       method: "POST",
       body: JSON.stringify({ label: $("campaignLabel").value })
     });
-    showResult($("linkResult"), `<strong>Your controlled test link:</strong><br><a href="${escapeHtml(data.trackingUrl)}" target="_blank" rel="noopener">${escapeHtml(data.trackingUrl)}</a><br><br>Use only with your own test account. Opening it records a visit; no credentials are requested.`);
+    showResult($("linkResult"), `<strong>Your local controlled test link:</strong><br><a href="${escapeHtml(data.trackingUrl)}" target="_blank" rel="noopener">${escapeHtml(data.trackingUrl)}</a><br><button type="button" id="copyLink" class="small secondary">Copy link</button><br><br>This link works only on this computer while PhishWatch is running. It is not reachable by external email scanners or other devices. Opening it records a request; no credentials are requested.`);
+    $("copyLink").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(data.trackingUrl);
+        $("copyLink").textContent = "Copied";
+      } catch {
+        $("copyLink").textContent = "Copy unavailable — select the link above";
+      }
+    });
     await refreshEvents();
   } catch (error) {
     showResult($("linkResult"), escapeHtml(error.message));
@@ -74,3 +83,24 @@ $("analyzeUrl").addEventListener("click", async () => {
 
 $("refresh").addEventListener("click", refreshEvents);
 refreshEvents();
+
+
+$("exportCsv").addEventListener("click", async () => {
+  try {
+    const { events } = await request("/api/events");
+    const columns = ["timestamp", "campaignLabel", "method", "classification", "confidence", "reason"];
+    const quote = value => `"${String(value ?? "").replace(/"/g, '""')}"`;
+    const csv = [columns.join(","), ...events.map(event => columns.map(column => quote(event[column])).join(","))].join("\r\n");
+    const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "phishwatch-activity.csv";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    alert(error.message);
+  }
+});
