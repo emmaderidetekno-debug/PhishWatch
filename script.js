@@ -90,8 +90,8 @@ $("exportCsv").addEventListener("click", async () => {
     const { events } = await request("/api/events");
     const columns = ["timestamp", "campaignLabel", "method", "classification", "confidence", "reason"];
     const quote = value => `"${String(value ?? "").replace(/"/g, '""')}"`;
-    const csv = [columns.join(","), ...events.map(event => columns.map(column => quote(event[column])).join(","))].join("\\r\\n");
-    const blob = new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+    const csv = [columns.join(","), ...events.map(event => columns.map(column => quote(event[column])).join(","))].join("\r\n");
+    const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
