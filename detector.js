@@ -1,9 +1,11 @@
+const net = require("node:net");
+
 function analyzeUrl(input) {
   const indicators = [];
   let parsed;
 
   try {
-    parsed = new URL(input);
+    parsed = new URL(String(input));
   } catch {
     return {
       valid: false,
@@ -13,39 +15,63 @@ function analyzeUrl(input) {
     };
   }
 
-  let score = 0;
   const host = parsed.hostname.toLowerCase();
+
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    return {
+      valid: false,
+      hostname: host,
+      protocol: parsed.protocol,
+      risk: "High",
+      score: 100,
+      indicators: ["Only HTTP and HTTPS URLs can be assessed by this checker."]
+    };
+  }
+
+  if (!host) {
+    return {
+      valid: false,
+      risk: "High",
+      score: 100,
+      indicators: ["The URL does not contain a hostname."]
+    };
+  }
+
+  let score = 0;
 
   if (parsed.protocol !== "https:") {
     score += 20;
     indicators.push("The URL does not use HTTPS.");
   }
+
   if (parsed.username || parsed.password) {
     score += 30;
     indicators.push("The URL contains embedded username/password information.");
   }
+
   if (host.startsWith("xn--") || host.includes(".xn--")) {
     score += 25;
     indicators.push("The hostname contains punycode, which can be used for lookalike domains.");
   }
-  if (/\\d{1,3}(\\.\\d{1,3}){3}/.test(host)) {
+
+  if (net.isIP(host)) {
     score += 20;
     indicators.push("The hostname is an IP address rather than a conventional domain.");
   }
+
   if (host.split(".").length >= 5) {
     score += 10;
     indicators.push("The hostname has an unusually large number of subdomains.");
   }
+
   if (parsed.href.length > 180) {
     score += 10;
     indicators.push("The URL is unusually long.");
   }
+
   if (/(login|verify|account|secure|password|update|wallet|support)/i.test(parsed.pathname + parsed.search)) {
     score += 10;
     indicators.push("The URL contains words commonly used in account-themed lures.");
-  }
-  if (parsed.protocol === "http:" && (parsed.search || parsed.pathname !== "/")) {
-    indicators.push("Review the destination carefully before opening it.");
   }
 
   score = Math.min(score, 100);
@@ -57,7 +83,9 @@ function analyzeUrl(input) {
     protocol: parsed.protocol,
     risk,
     score,
-    indicators: indicators.length ? indicators : ["No obvious heuristic indicators found. This does not prove the URL is safe."]
+    indicators: indicators.length
+      ? indicators
+      : ["No obvious heuristic indicators found. This does not prove the URL is safe."]
   };
 }
 
