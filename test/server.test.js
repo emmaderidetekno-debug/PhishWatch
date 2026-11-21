@@ -133,3 +133,15 @@ test("unknown routes return JSON 404 responses", async () => {
   assert.equal(response.status, 404);
   assert.deepEqual(await response.json(), { error: "The requested resource was not found." });
 });
+
+test("generated links do not trust an untrusted Host header", async () => {
+  const response = await fetch(`${baseUrl}/api/campaigns`, {
+    method: "POST",
+    headers: { "content-type": "application/json", host: "attacker.example" },
+    body: JSON.stringify({ label: "Host header test" })
+  });
+  const data = await response.json();
+  assert.equal(response.status, 201);
+  assert.match(data.trackingUrl, /^http:\/\/localhost:3000\/t\//);
+  assert.equal(data.trackingUrl.includes("attacker.example"), false);
+});
