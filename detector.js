@@ -54,7 +54,9 @@ function analyzeUrl(input) {
     indicators.push("The hostname contains punycode, which can be used for lookalike domains.");
   }
 
-  if (net.isIP(host)) {
+  const ipHost = host.startsWith("[") && host.endsWith("]") ? host.slice(1, -1) : host;
+
+  if (net.isIP(ipHost)) {
     score += 20;
     indicators.push("The hostname is an IP address rather than a conventional domain.");
   }
