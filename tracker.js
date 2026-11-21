@@ -2,20 +2,29 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-const dataDir = path.join(__dirname, "..", "data");
+const dataDir = path.join(__dirname, "data");
 const file = path.join(dataDir, "activity.json");
 
 function readStore() {
   try {
-    return JSON.parse(fs.readFileSync(file, "utf8"));
-  } catch {
-    return { campaigns: [], events: [] };
+    const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+    return {
+      campaigns: Array.isArray(parsed.campaigns) ? parsed.campaigns : [],
+      events: Array.isArray(parsed.events) ? parsed.events : []
+    };
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return { campaigns: [], events: [] };
+    }
+    throw error;
   }
 }
 
 function writeStore(store) {
   fs.mkdirSync(dataDir, { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(store, null, 2));
+  const temporaryFile = `${file}.tmp`;
+  fs.writeFileSync(temporaryFile, JSON.stringify(store, null, 2), { mode: 0o600 });
+  fs.renameSync(temporaryFile, file);
 }
 
 function getCampaigns() {
@@ -31,9 +40,10 @@ function createCampaign(label) {
   const campaign = {
     id: crypto.randomUUID(),
     token: crypto.randomBytes(18).toString("hex"),
-    label,
+    label: String(label).slice(0, 80),
     createdAt: new Date().toISOString()
   };
+
   store.campaigns.unshift(campaign);
   writeStore(store);
   return campaign;
