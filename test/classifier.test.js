@@ -28,3 +28,15 @@ test("keeps missing user-agent requests unclassified", () => {
   assert.equal(result.classification, "Unclassified visit");
   assert.match(result.reason, /No user-agent/i);
 });
+
+test("recognizes a spaced Safe Links marker", () => {
+  const result = classifyVisit("GET", "Example Safe Links preview");
+  assert.equal(result.classification, "Likely automated / preview");
+  assert.equal(result.confidence, "Medium");
+});
+
+test("normalizes the HTTP method before classifying HEAD", () => {
+  const result = classifyVisit("head", "Mozilla/5.0");
+  assert.equal(result.classification, "Likely automated / preview");
+  assert.equal(result.confidence, "Medium");
+});
