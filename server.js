@@ -39,7 +39,8 @@ app.get("/api/events", (_req, res) => {
 });
 
 app.get("/api/campaigns", (_req, res) => {
-  res.json({ campaigns: getCampaigns() });
+  const campaigns = getCampaigns().map(({ id, label, createdAt }) => ({ id, label, createdAt }));
+  res.json({ campaigns });
 });
 
 app.post("/api/campaigns", (req, res) => {
