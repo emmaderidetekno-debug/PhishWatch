@@ -9,7 +9,7 @@
 <body>
   <header class="topbar">
     <div><div class="eyebrow">CONTROLLED SECURITY RESEARCH</div><h1>PhishWatch</h1></div>
-    <span class="status"><i></i> Local lab</span>
+    <span class="status"><i></i> Local lab · v0.2.0</span>
   </header>
   <main>
     <section class="intro">
@@ -36,10 +36,10 @@
     </section>
 
     <section class="panel events">
-      <div class="panel-head"><div><h3>Recent activity</h3><p>Automated scanners may visit links before a person does.</p></div><button id="refresh" class="small secondary">Refresh</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Time</th><th>Test</th><th>Method</th><th>Classification</th><th>Browser signature</th></tr></thead><tbody id="eventsBody"><tr><td colspan="5" class="empty">No activity yet. Generate a test link first.</td></tr></tbody></table></div>
+      <div class="panel-head"><div><h3>Recent activity</h3><p>Classification is evidence-based and never labels a normal GET as a confirmed human click.</p></div><button id="refresh" class="small secondary">Refresh</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Time</th><th>Test</th><th>Method</th><th>Classification</th><th>Confidence</th><th>Reason / evidence</th></tr></thead><tbody id="eventsBody"><tr><td colspan="6" class="empty">No activity yet. Generate a test link first.</td></tr></tbody></table></div>
     </section>
-    <p class="footnote">Heuristic classifications are clues, not proof of human or automated activity. PhishWatch does not log IP addresses or collect credentials.</p>
+    <p class="footnote">A browser-like request is not proof that a person clicked. User-agent strings can be missing or spoofed. Treat every classification as a clue, not a verdict. PhishWatch does not log IP addresses or collect credentials.</p>
   </main>
   <script src="/script.js"></script>
 </body>
