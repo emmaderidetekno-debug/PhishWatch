@@ -2,6 +2,10 @@
 
 ## 0.3.0
 
+- Add one-click copying of local test links.
+- Add CSV export for the latest 100 activity records.
+- Clearly explain that localhost links cannot be reached by remote email scanners or other devices.
+
 - Bind the server to localhost by default.
 - Stop trusting the incoming Host header when constructing generated tracking links.
 - Add security headers and no-store response caching.
