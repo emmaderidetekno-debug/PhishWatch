@@ -5,7 +5,7 @@ PhishWatch is a local, controlled security-research lab for understanding link a
 ## Safety, privacy and scope
 
 - Use only test links and accounts you own or have explicit permission to test.
-- The tracker records a timestamp, HTTP method, a limited user-agent string (up to 300 characters), test ID, test label, and a transparent classification explanation.
+- The tracker records a timestamp, HTTP method, test ID, test label, and a transparent classification explanation. A user-agent string is examined transiently (up to 300 characters) for classification but is not persisted.
 - It does **not** collect passwords, OTPs, cookies, authorization headers, message contents, or IP addresses.
 - It does not attempt to bypass Gmail, Safe Browsing, spam filters, or security scanners.
 - A normal browser-like GET request is recorded as **Unclassified visit**, never as a confirmed human click.
