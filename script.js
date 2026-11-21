@@ -15,31 +15,32 @@ function showResult(element, html) {
   element.classList.remove("hidden");
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[char]));
+}
+
 async function refreshEvents() {
   const body = $("eventsBody");
   try {
     const { events } = await request("/api/events");
     if (!events.length) {
-      body.innerHTML = '<tr><td colspan="5" class="empty">No activity yet. Generate a test link first.</td></tr>';
+      body.innerHTML = '<tr><td colspan="6" class="empty">No activity yet. Generate a test link first.</td></tr>';
       return;
     }
     body.innerHTML = events.map(event => `
       <tr>
-        <td>${new Date(event.timestamp).toLocaleString()}</td>
-        <td>${escapeHtml(event.campaignId.slice(0, 8))}</td>
+        <td>${escapeHtml(new Date(event.timestamp).toLocaleString())}</td>
+        <td>${escapeHtml(String(event.campaignId || "").slice(0, 8))}</td>
         <td>${escapeHtml(event.method)}</td>
         <td>${escapeHtml(event.classification)}</td>
-        <td>${escapeHtml(event.userAgent)}</td>
+        <td>${escapeHtml(event.confidence || "Not assessed")}</td>
+        <td title="${escapeHtml(event.reason || "No reason stored")}" class="reason">${escapeHtml(event.reason || "Older event: no explanation stored")}</td>
       </tr>`).join("");
   } catch (error) {
-    body.innerHTML = `<tr><td colspan="5" class="empty">${escapeHtml(error.message)}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="6" class="empty">${escapeHtml(error.message)}</td></tr>`;
   }
-}
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[char]));
 }
 
 $("createCampaign").addEventListener("click", async () => {
