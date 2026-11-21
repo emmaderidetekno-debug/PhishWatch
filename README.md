@@ -28,6 +28,8 @@ npm start
 
 Open <http://localhost:3000>.
 
+**Important:** generated tracking links use `localhost` and work only on the same computer running PhishWatch. They are useful for local browser testing, but they cannot be reached by an external email scanner or another device. Do not send these local-only links expecting remote recipients or mail gateways to reach your server.
+
 For automatic restart during development:
 
 ```bash
@@ -51,6 +53,8 @@ npm.cmd start
 ## Features
 
 - Dashboard for controlled test-link activity
+- One-click copy for generated test links
+- CSV export of the latest 100 activity records
 - Unique random token per generated test link
 - GET and HEAD request recording
 - Transparent classification, confidence and plain-language evidence
@@ -66,7 +70,7 @@ npm.cmd start
 |---|---|---|
 | GET | `/api/health` | Health and version check |
 | GET | `/api/events` | Read the latest 100 activity events |
-| GET | `/api/campaigns` | List local test campaigns |
+| GET | `/api/campaigns` | List local test campaigns (tokens are not returned) |
 | POST | `/api/campaigns` | Create a controlled test link |
 | POST | `/api/analyze-url` | Analyze a URL using local heuristics |
 | GET / HEAD | `/t/:token` | Record an authorized test-link request |
