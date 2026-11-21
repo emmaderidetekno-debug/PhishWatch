@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const crypto = require("crypto");
 const { analyzeUrl } = require("./detector");
+const { classifyVisit } = require("./classifier");
 const { recordEvent, getEvents, getCampaigns, createCampaign } = require("./tracker");
 
 const app = express();
@@ -17,13 +18,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve only the three intended dashboard assets; do not expose the data store.
+// Serve only the intended dashboard assets; do not expose the data store.
 app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("/style.css", (_req, res) => res.sendFile(path.join(__dirname, "style.css")));
 app.get("/script.js", (_req, res) => res.sendFile(path.join(__dirname, "script.js")));
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, name: "PhishWatch", version: "0.1.1" });
+  res.json({ ok: true, name: "PhishWatch", version: "0.2.0" });
 });
 
 app.get("/api/events", (_req, res) => {
@@ -55,8 +56,8 @@ app.post("/api/analyze-url", (req, res) => {
   return res.json(analyzeUrl(input));
 });
 
-// Authorized test endpoint: records only method, timestamp, user-agent and test ID.
-app.all("/t/:token", (req, res, next) => {
+// Authorized test endpoint: no IP, credentials, cookies or message content are stored.
+app.all("/t/:token", (req, res) => {
   if (req.method !== "GET" && req.method !== "HEAD") {
     return res.status(405).set("Allow", "GET, HEAD").send("Method not allowed.");
   }
@@ -66,7 +67,7 @@ app.all("/t/:token", (req, res, next) => {
 
   const userAgent = String(req.get("user-agent") || "").slice(0, 300);
   const method = req.method;
-  const automationHints = /bot|crawler|spider|scanner|preview|safelinks|urlscan|proofpoint|mimecast|googleimageproxy/i.test(userAgent);
+  const assessment = classifyVisit(method, userAgent);
 
   recordEvent({
     id: crypto.randomUUID(),
@@ -74,9 +75,9 @@ app.all("/t/:token", (req, res, next) => {
     timestamp: new Date().toISOString(),
     method,
     userAgent: userAgent || "Not provided",
-    classification: automationHints || method === "HEAD"
-      ? "Likely automated / preview"
-      : "Unclassified visit"
+    classification: assessment.classification,
+    confidence: assessment.confidence,
+    reason: assessment.reason
   });
 
   if (method === "HEAD") return res.status(204).end();
