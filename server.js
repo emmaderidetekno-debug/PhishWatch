@@ -90,7 +90,6 @@ app.all("/t/:token", (req, res) => {
     campaignLabel: campaign.label,
     timestamp: new Date().toISOString(),
     method,
-    userAgent: userAgent || "Not provided",
     classification: assessment.classification,
     confidence: assessment.confidence,
     reason: assessment.reason
