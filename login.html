@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Sign in | PhishWatch</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div><div class="eyebrow">CONTROLLED SECURITY RESEARCH</div><h1>PhishWatch</h1></div>
+    <span class="status"><i></i> Local lab · v0.3.0</span>
+  </header>
+  <main>
+    <section class="login-wrap">
+      <article class="panel login-card">
+        <div class="panel-head"><div><h3>Dashboard sign-in</h3><p>This dashboard is closed until you authenticate.</p></div><span class="pill">AUTH</span></div>
+        <form id="loginForm" novalidate>
+          <label for="password">Dashboard password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+          <button id="submitLogin" type="submit">Sign in</button>
+        </form>
+        <div id="loginResult" class="result hidden" role="alert"></div>
+        <p class="subtle-note">Use the password from <code>PHISHWATCH_PASSWORD</code>, or the one-time password printed in the server console when none was configured. Sessions last 8 hours and are held in memory only.</p>
+      </article>
+    </section>
+    <p class="footnote">PhishWatch records link-request metadata only. It does not collect credentials, cookies, IP addresses or message content.</p>
+  </main>
+  <script src="/login.js"></script>
+</body>
+</html>

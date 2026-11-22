@@ -84,6 +84,14 @@ $("analyzeUrl").addEventListener("click", async () => {
 $("refresh").addEventListener("click", refreshEvents);
 refreshEvents();
 
+$("signOut").addEventListener("click", async () => {
+  try {
+    await fetch("/api/logout", { method: "POST", headers: { "Content-Type": "application/json" } });
+  } finally {
+    window.location.href = "/login";
+  }
+});
+
 
 $("exportCsv").addEventListener("click", async () => {
   try {

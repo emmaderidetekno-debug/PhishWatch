@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PhishWatch — interview demo script (one page)</title>
+<style>
+  @page { size: A4; margin: 11mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 10mm; font: 9pt/1.38 ui-sans-serif, system-ui, "Segoe UI", sans-serif; color: #16202f; background: #fff; }
+  .sheet { max-width: 190mm; margin: 0 auto; }
+  header { border-bottom: 2px solid #16202f; padding-bottom: 5px; margin-bottom: 7px; display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+  h1 { font-size: 14pt; margin: 0; letter-spacing: -.3px; }
+  .sub { font-size: 7.5pt; color: #5a6779; margin-top: 2px; }
+  .badge { font-size: 7pt; font-weight: 700; letter-spacing: .8px; color: #8a2b2b; border: 1px solid #d9a3a3; background: #fdf2f2; padding: 3px 7px; border-radius: 3px; white-space: nowrap; }
+  .cols { column-count: 2; column-gap: 7mm; column-fill: balance; }
+  section { break-inside: avoid; margin-bottom: 7px; }
+  h2 { font-size: 9pt; margin: 0 0 3px; text-transform: uppercase; letter-spacing: .6px; color: #28518a; border-bottom: 1px solid #dde4ee; padding-bottom: 2px; }
+  p, ul, ol { margin: 0 0 4px; }
+  ul, ol { padding-left: 13px; }
+  li { margin-bottom: 2px; }
+  table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+  th { text-align: left; color: #5a6779; font-weight: 600; border-bottom: 1px solid #cfd8e5; padding: 2px 3px; }
+  td { padding: 2px 3px; border-bottom: 1px solid #eef1f6; vertical-align: top; }
+  td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 7.5pt; background: #f2f5fa; padding: 0 2px; border-radius: 2px; }
+  .say { color: #334; font-style: italic; }
+  .box { border: 1px solid #dde4ee; background: #f8fafd; padding: 5px 6px; border-radius: 3px; }
+  .warn { border-color: #e5c8c8; background: #fdf5f5; }
+  .k { font-weight: 700; }
+  .num { font-variant-numeric: tabular-nums; }
+  footer { border-top: 1px solid #cfd8e5; margin-top: 6px; padding-top: 4px; font-size: 7pt; color: #5a6779; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div>
+      <h1>PhishWatch — 10-minute interview walkthrough</h1>
+      <div class="sub">Controlled link-activity lab · local-only · defender's story, not an attack demo</div>
+    </div>
+    <span class="badge">MOCK DATA ONLY</span>
+  </header>
+
+  <div class="cols">
+    <section>
+      <h2>Before you start</h2>
+      <ul>
+        <li><code>npm install</code> once, then <code>npm run seed:demo</code> → 1 campaign + 7 synthetic visits, all labelled <code>[DEMO][MOCK]</code>.</li>
+        <li><code>PHISHWATCH_PASSWORD=… npm start</code>, open <code>http://localhost:3000</code>, sign in at <code>/login</code>.</li>
+        <li>Say the quiet part first: <span class="say">"Every row is mock data I generated; the classifier output is real."</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>The run</h2>
+      <table>
+        <tr><th>Step</th><th>Do</th><th>Say / expect</th></tr>
+        <tr><td class="n">1 · 60s</td><td>Open <code>/</code> without signing in.</td><td>"Redirected to login — dashboard fails closed."</td></tr>
+        <tr><td class="n">2 · 60s</td><td>Sign in, read the activity table.</td><td>"Label discipline: [DEMO][MOCK] is the campaign, so no row can be mistaken for a real person."</td></tr>
+        <tr><td class="n">3 · 90s</td><td>Point at HEAD rows.</td><td>"HEAD = gateway probe. A normal GET is 'Unclassified visit', never 'clicked'."</td></tr>
+        <tr><td class="n">4 · 90s</td><td>Explain Confidence.</td><td>"Ordinal evidence strength, not a fake probability. Medium = marker found but spoofable."</td></tr>
+        <tr><td class="n">5 · 90s</td><td>URL checker: <code>paypa1-secure-login…</code></td><td>"High, 65 — one edit from PayPal. Used to be Medium before brand distance."</td></tr>
+        <tr><td class="n">6 · 60s</td><td>URL checker: <code>xn--pple-43d.com</code></td><td>"High, 80 — punycode decoded to 'аpple.com', reads as 'apple.com', mixed script."</td></tr>
+        <tr><td class="n">7 · 60s</td><td>Paste a 3-hop chain.</td><td>"Medium, 40 — HTTP downgrade, host change, final hop impersonates PayPal. Nothing was fetched."</td></tr>
+        <tr><td class="n">8 · 60s</td><td>Sign out, then hit <code>/api/events</code>.</td><td>"401 — server-side revocation, not just a cleared cookie."</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>Numbers to quote (verified)</h2>
+      <table>
+        <tr><th>Input</th><th>Result</th></tr>
+        <tr><td><code>http://paypa1-secure-login.verify-account.example.tld/login?update=1</code></td><td class="num">High 65</td></tr>
+        <tr><td><code>https://xn--pple-43d.com/</code></td><td class="num">High 80</td></tr>
+        <tr><td><code>news.example → http://tracker.example → https://paypa1.com</code></td><td class="num">Medium 40</td></tr>
+        <tr><td><code>https://github.com/…/PhishWatch</code></td><td class="num">Low 0 (control)</td></tr>
+      </table>
+      <p style="margin-top:3px">Bands: ≥60 High · ≥30 Medium · else Low. Redirect contributions capped at 50.</p>
+    </section>
+
+    <section>
+      <h2>Commands</h2>
+      <div class="box">
+        <code>npm run seed:demo</code><br>
+        <code>PHISHWATCH_PASSWORD=demo npm start</code><br>
+        <code>curl -c c.txt -X POST :3000/api/login -d '{"password":"demo"}' -H 'Content-Type: application/json'</code><br>
+        <code>curl -b c.txt :3000/api/events</code><br>
+        <code>npm test</code> → 61 passing
+      </div>
+    </section>
+
+    <section>
+      <h2>Questions you will get</h2>
+      <ul>
+        <li><span class="k">Isn't this a phishing kit?</span> No form, no redirect, no credential handling; it records that a URL was requested and refuses anything but GET/HEAD.</li>
+        <li><span class="k">Why keep a tracking endpoint public?</span> A link recipient cannot authenticate; gating it would make the measurement meaningless. It is the most rate-limited route.</li>
+        <li><span class="k">Why not log IPs?</span> Personal data that changes no verdict. Rate-limit buckets use an HMAC of the address, held in memory only.</li>
+        <li><span class="k">What's still missing?</span> TLS, durable sessions, roles, MFA, persistent auth audit log, shared limiter state.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Guardrails to state out loud</h2>
+      <div class="box warn">
+        <ul>
+          <li>Only links and accounts you own or are authorised to test.</li>
+          <li>Mock data is labelled <code>[DEMO][MOCK]</code>; delete <code>data/activity.json</code> to remove it.</li>
+          <li>Links are <code>localhost</code> only — they cannot reach another device or a real mail gateway.</li>
+          <li>No bypassing of Safe Browsing, Gmail or spam filters, and no credential collection. Ever.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <footer>PhishWatch v0.3.0 · printable script · figures above were measured on this build, not estimated.</footer>
+</div>
+</body>
+</html>
