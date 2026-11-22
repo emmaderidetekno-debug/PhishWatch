@@ -235,6 +235,36 @@ test("URL analysis accepts an observed redirect chain and validates it", async (
   assert.equal(badHop.status, 400);
 });
 
+test("CSV export neutralises spreadsheet formula triggers in a label", async () => {
+  const label = '=HYPERLINK("http://example.invalid","click")';
+  const created = await jsonRequest("/api/campaigns", { label });
+  const body = await created.json();
+  assert.equal(body.campaign.label, label);
+
+  // The label only reaches the export once a visit is recorded against it.
+  await fetch(`${baseUrl}${new URL(body.trackingUrl).pathname}`);
+
+  const unauthenticated = await fetch(`${baseUrl}/api/events.csv`);
+  assert.equal(unauthenticated.status, 401);
+
+  const response = await authed("/api/events.csv");
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /text\/csv/);
+  assert.match(response.headers.get("content-disposition"), /attachment; filename="phishwatch-activity\.csv"/);
+
+  // Read raw bytes: fetch's text() decoder strips a UTF-8 BOM, which would hide
+  // whether the attachment Excel needs is actually present.
+  const raw = Buffer.from(await response.arrayBuffer());
+  assert.deepEqual([raw[0], raw[1], raw[2]], [0xef, 0xbb, 0xbf], "export must start with a UTF-8 BOM");
+  const csv = raw.toString("utf8");
+  assert.equal(csv.startsWith("\ufeff"), true);
+
+  const row = csv.split("\r\n").find(line => line.includes("HYPERLINK"));
+  assert.ok(row, "expected the malicious label to appear in the export");
+  assert.match(row, /"'=HYPERLINK\(""http:\/\/example\.invalid""/);
+  assert.equal(/,?"=HYPERLINK/.test(row), false, "a raw formula must never be exported");
+});
+
 test("malformed JSON receives a controlled client error", async () => {
   const response = await authed("/api/campaigns", {
     method: "POST",

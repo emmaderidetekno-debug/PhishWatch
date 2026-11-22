@@ -4,6 +4,7 @@ const path = require("path");
 const { analyzeUrl } = require("./detector");
 const { classifyVisit } = require("./classifier");
 const { recordEvent, getEvents, getCampaigns, createCampaign } = require("./tracker");
+const { eventsToCsv } = require("./csv");
 const { SESSION_COOKIE, createAuth, parseCookies, sessionCookie, clearSessionCookie } = require("./auth");
 const { createRateLimiter } = require("./ratelimit");
 
@@ -143,6 +144,14 @@ app.get("/api/health", (_req, res) => {
 
 app.get("/api/events", requireDashboard, apiLimiter.middleware, (_req, res) => {
   res.json({ events: getEvents().slice(0, 100) });
+});
+
+// The export is generated on the server so there is one authoritative escaper,
+// and so label text is neutralised where it can be tested rather than trusted.
+app.get("/api/events.csv", requireDashboard, apiLimiter.middleware, (_req, res) => {
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", 'attachment; filename="phishwatch-activity.csv"');
+  res.send(eventsToCsv(getEvents().slice(0, 100)));
 });
 
 app.get("/api/campaigns", requireDashboard, apiLimiter.middleware, (_req, res) => {

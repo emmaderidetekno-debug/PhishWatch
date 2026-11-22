@@ -135,7 +135,7 @@ Limits are fixed-window, held in memory, and reset on restart. Every response ca
 - Password-protected dashboard with session cookies and server-side sign-out
 - Rate limiting on sign-in, dashboard APIs and the tracking endpoint
 - One-click copy for generated test links
-- CSV export of the latest 100 activity records
+- CSV export of the latest 100 activity records, generated server-side with spreadsheet-formula neutralisation
 - Unique random token per generated test link
 - GET and HEAD request recording
 - Transparent classification, confidence and plain-language evidence
@@ -156,6 +156,7 @@ Limits are fixed-window, held in memory, and reset on restart. Every response ca
 | POST | `/api/login` | no | Exchange the dashboard password for a session cookie |
 | POST | `/api/logout` | yes | Revoke the session and clear the cookie |
 | GET | `/api/events` | yes | Read the latest 100 activity events |
+| GET | `/api/events.csv` | yes | Download the latest 100 events as a CSV attachment |
 | GET | `/api/campaigns` | yes | List local test campaigns (tokens are not returned) |
 | POST | `/api/campaigns` | yes | Create a controlled test link |
 | POST | `/api/analyze-url` | yes | Analyze a URL using local heuristics; optional `chain` array of observed hops |
@@ -195,6 +196,18 @@ Redirect contributions are capped at 50 so a chain cannot single-handedly produc
 
 Example: `http://paypa1-secure-login.verify-account.example.tld/login?update=1` scores 65 (HTTPS 20, account-themed path 10, `paypa1` one edit from `paypal` 35) and is reported as **High**, with `brandMatch.kind: "lookalike"`. Before brand distance existed it scored 30 and was only Medium.
 
+## CSV export
+
+`GET /api/events.csv` returns the latest 100 events as an attachment. It is built on the server so there is one authoritative escaper rather than a second copy in the browser.
+
+Campaign labels are free text, and a spreadsheet evaluates a cell that begins with `=`, `+`, `-` or `@` — so a label like `=HYPERLINK("http://x","click")` would run when the export is opened in Excel. That is formula injection, and quoting alone does not stop it. Every export value is therefore neutralised:
+
+1. leading whitespace, tabs, CRs and zero-width/BOM characters are skipped when deciding whether a value is dangerous (they cannot be relied on to keep a formula inert),
+2. if the remaining text starts with `=`, `+`, `-`, `@`, tab or CR, a single quote is prefixed, which spreadsheets read as "text",
+3. the value is then quoted with `"` doubling, so commas, quotes and newlines stay inside one cell.
+
+The output keeps a UTF-8 BOM and CRLF endings so Excel opens it correctly. Neutralisation is covered by unit tests in `test/csv.test.js` and by an end-to-end export test in `test/server.test.js`.
+
 ## Local data
 
 Runtime data is stored in `data/activity.json`. The data directory is ignored by Git so local test activity is not committed. Sessions and rate-limit buckets live only in memory and are never written to disk.
@@ -214,6 +227,7 @@ Environment settings:
 - `auth.js` — password verification, session store and cookie helpers
 - `ratelimit.js` — in-memory fixed-window limiter keyed by hashed client address
 - `tracker.js` — local campaign and event storage
+- `csv.js` — CSV export and spreadsheet-formula neutralisation
 - `classifier.js` — transparent request classification
 - `detector.js` — defensive URL heuristics: brand distance, punycode decoding and offline redirect analysis
 - `index.html`, `style.css`, `script.js` — dashboard
